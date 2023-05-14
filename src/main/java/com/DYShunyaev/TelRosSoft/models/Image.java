@@ -23,6 +23,9 @@ public class Image {
 
     private Long size;
 
+    /**
+     * Возможна ошибка, при создании БД, колонке bytes присваивается значение TINYBLOB,
+     * если imageTable.sql не сработает, то нужно вручную изменить тип на LONGBLOB**/
     @Lob
     private byte[] bytes;
 
