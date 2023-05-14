@@ -25,14 +25,21 @@ public class UsersDetailsController {
         this.usersDetailsService = usersDetailsService;
         this.usersService = usersService;
     }
-
+    /**
+     * @getUsersDetailsByUserId(): Принимает GET запрос, с параметром "userId", от клиентского сервиса, после чего проверяет, существует
+     * ли данный объект в БД, при отсутствии выдает Exception, при наличии возвращает объект UsersDetails, по его id.
+     * **/
     @RequestMapping(value = "/users/details/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public Optional<UsersDetails> getUsersDetailsByUserId(@PathVariable(name = "id")long userId) {
         long detailsId = usersDetailsService.exsistUsersDetailsById(userId);
 
         return usersDetailsService.getUsersDetailsById(detailsId);
     }
-
+    /**
+     * @updateUsersDetailsByUsersId(): Принимает PUT запрос, с параметром "userId" и объектом класса UsersDetails,
+     * от клиентского сервиса, после чего проверяет, существует ли данный объект в БД, при отсутствии выдает Exception,
+     * при получает detailsId и вызывает метод "updateUserDetails()", возвращая измененный объект UsersDetails.
+     * **/
     @RequestMapping(value = "/users/details/{id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<Object> updateUsersDetailsByUsersId(@PathVariable(name = "id")long userId,
                                                               @RequestBody UsersDetails usersDetails) {
@@ -42,7 +49,11 @@ public class UsersDetailsController {
 
         return new ResponseEntity<>(usersDetails, HttpStatusCode.valueOf(200));
     }
-
+    /**
+     * @saveUserDetails(): Принимает POST запрос, с параметром "userId" и объектом класса UsersDetails,
+     * от клиентского сервиса, после чего проверяет, существует ли данный объект в БД, при отсутствии выдает Exception,
+     * при наличии присваевает пользователю новый объект класса UsersDetails и сохраняет его в БД.
+     * **/
     @RequestMapping(value = "/users/details/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<Object> saveUserDetails(@PathVariable(name = "id") long userId,
                                                   @RequestBody UsersDetails usersDetails) {
@@ -54,7 +65,11 @@ public class UsersDetailsController {
         usersDetailsService.saveUsersDetails(usersDetails);
         return new ResponseEntity<>(users, HttpStatusCode.valueOf(200));
     }
-
+    /**
+     * @deleteUserDetails(): Принимает DELETE запрос, с параметром "userId", от клиентского сервиса, после чего проверяет,
+     * существует ли данный объект в БД, при отсутствии выдает Exception, при наличии получает detailsId, удаляет связь между
+     * объектами Users и UsersDetails, после чего удаляет детальную информацию пользователя из БД.
+     * **/
     @RequestMapping(value = "/users/details/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<Object> deleteUserDetails(@PathVariable(name = "id") long userId) {
         if (!usersService.existUserById(userId)) {

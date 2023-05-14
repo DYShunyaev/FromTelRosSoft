@@ -7,7 +7,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
 public class UsersGlobalExceptionHandler {
-
+    /**
+     * @handlerException(): Принимает Exceptions, отправляя статус "Not Found."**/
     @ExceptionHandler
     private ResponseEntity<UsersIncorrectData> handlerException(NoSuchUsersException exception) {
         UsersIncorrectData data = new UsersIncorrectData();

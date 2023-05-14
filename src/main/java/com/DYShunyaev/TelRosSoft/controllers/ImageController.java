@@ -2,6 +2,7 @@ package com.DYShunyaev.TelRosSoft.controllers;
 
 import com.DYShunyaev.TelRosSoft.exception.NoSuchUsersException;
 import com.DYShunyaev.TelRosSoft.models.Image;
+import com.DYShunyaev.TelRosSoft.models.Users;
 import com.DYShunyaev.TelRosSoft.models.UsersDetails;
 import com.DYShunyaev.TelRosSoft.services.ImageService;
 import com.DYShunyaev.TelRosSoft.services.UsersDetailsService;
@@ -31,10 +32,14 @@ public class ImageController {
         this.usersDetailsService = usersDetailsService;
         this.usersService = usersService;
     }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getImage(@PathVariable(name = "id")long imageId) throws IOException {
-        Image image = imageService.getImage(imageId);
+    /**
+     * @getImage(): Принимает GET запрос, с параметром "userId", от клиентского сервиса, после чего возвращает объект Image,
+     * по его id, полученном из UsersDetails, который хранится в Users.
+     * **/
+    @GetMapping("")
+    public ResponseEntity<?> getImage(@PathVariable(name = "userId")long userId) throws IOException {
+        Image image = imageService.getImage(usersService.findUserById(userId).orElseThrow()
+                .getUsersDetails().getImage().getId());
 
         return ResponseEntity.ok()
                 .header("fileName", image.getOriginalName())
@@ -42,7 +47,11 @@ public class ImageController {
                 .contentLength(image.getSize())
                 .body(new InputStreamResource(new ByteArrayInputStream(image.getBytes())));
     }
-
+    /**
+     * @saveImage(): Принимает POST запрос, с параметром "userId" и объектом класса MultipartFile,
+     * от клиентского сервиса, после чего присваевает парметр Image объекту usersDetails и сохраняет изображение,
+     * в виде модели класса Image, в БД.
+     * **/
     @PostMapping("")
     public ResponseEntity<?> saveImage(@PathVariable(name = "userId")long userId,
                                        @RequestParam("file")MultipartFile file) throws IOException {
@@ -62,16 +71,20 @@ public class ImageController {
                 .contentLength(image.getSize())
                 .body(new InputStreamResource(new ByteArrayInputStream(image.getBytes())));
     }
-
-    @PutMapping("/{id}")
+    /**
+     * @updateImage(): Принимает PUT запрос, с параметром "userId" и объектом класса MultipartFile,
+     * от клиентского сервиса, после чего получает detailsId и вызывает метод "updateImage()",
+     * возвращая измененное изображение.
+     * **/
+    @PutMapping("")
     public ResponseEntity<?> updateImage(@PathVariable(name = "userId")long userId,
-                                       @PathVariable(name = "id")long imageId,
                                        @RequestParam("file")MultipartFile file) throws IOException {
         if (!usersService.existUserById(userId)) {
             throw new NoSuchUsersException();
         }
 
-        Image image = imageService.updateImage(file,imageId);
+        Image image = imageService.updateImage(file,usersService.findUserById(userId).orElseThrow()
+                .getUsersDetails().getImage().getId());
 
         return ResponseEntity.ok()
                 .header("fileName", image.getOriginalName())
@@ -79,15 +92,18 @@ public class ImageController {
                 .contentLength(image.getSize())
                 .body(new InputStreamResource(new ByteArrayInputStream(image.getBytes())));
     }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteImage(@PathVariable(name = "userId")long userId,
-                                         @PathVariable(name = "id")long imageId) {
+    /**
+     * @deleteImage(): Принимает DELETE запрос, с параметром "userId", от клиентского сервиса, получает imageId, удаляет связь между
+     * объектами UsersDetails и Image, после чего удаляет изображение пользователя из БД, возвращая объект UsersDetails.
+     * **/
+    @DeleteMapping("")
+    public ResponseEntity<?> deleteImage(@PathVariable(name = "userId")long userId) {
         if (!usersService.existUserById(userId)) {
             throw new NoSuchUsersException();
         }
         UsersDetails details = usersDetailsService.getUsersDetailsById(usersService.findUserById(userId).orElseThrow()
                 .getUsersDetails().getDetailsId()).orElseThrow();
+        long imageId = details.getImage().getId();
         details.setImage(null);
         usersDetailsService.updateUserDetails(details.getDetailsId(),details);
 

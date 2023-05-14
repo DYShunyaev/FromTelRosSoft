@@ -2,6 +2,7 @@ package com.DYShunyaev.TelRosSoft.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
@@ -14,6 +15,8 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class BasicConfig {
+    /**
+     * @userDetailsService(): Обеспечивает создание и хранение 2х учетных записей, для авторизации.**/
     @Bean
     public InMemoryUserDetailsManager userDetailsService(PasswordEncoder passwordEncoder) {
         UserDetails user = User.withUsername("user")
@@ -28,20 +31,25 @@ public class BasicConfig {
 
         return new InMemoryUserDetailsManager(user, admin);
     }
-
+/**
+ * @securityFilterChain(): Определяет цепочку фильтров, которую можно сопоставить с файлом HttpServletRequest,
+ * для того, чтобы решить, применимо ли оно к этому запросу.**/
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
-                .anyRequest()
-                .authenticated()
-                .and()
-                .httpBasic();
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf().disable()
+                .cors().and()
+                .authorizeHttpRequests((auth) -> auth
+                        .requestMatchers("/api/**").hasAnyRole("USER","ADMIN")
+                        .anyRequest().authenticated()
+                )
+                .httpBasic(Customizer.withDefaults());
         return http.build();
     }
-
+    /**
+     * @passwordEncoder(): Предназначен для кодировки паролей.**/
     @Bean
     public PasswordEncoder passwordEncoder() {
-        PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-        return encoder;
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 }

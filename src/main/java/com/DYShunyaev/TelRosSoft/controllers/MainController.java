@@ -22,12 +22,18 @@ public class MainController {
     public MainController(UsersService usersService) {
         this.usersService = usersService;
     }
-
+    /**
+     * @showAllUsers(): Принимает GET запрос, от клиентского сервиса, после чего возвращает List, содержащий
+     * всех Users, находящихся в БД.
+     * **/
     @RequestMapping(value = "/users", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public List<Users> showAllUsers() {
         return usersService.findAllUsers();
     }
-
+    /**
+     * @showUserById(): Принимает GET запрос, с параметром "userId", от клиентского сервиса, после чего проверяет, существует
+     * ли данный объект в БД, при отсутствии выдает Exception, при наличии возвращает объект Users, по его id.
+     * **/
     @RequestMapping(value = "/users/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public Optional<Users> showUserById(@PathVariable(name = "id") long id) {
         if (!usersService.existUserById(id)) {
@@ -36,13 +42,19 @@ public class MainController {
         }
         return usersService.findUserById(id);
     }
-
+    /**
+     * @newUsers(): Принимает POST запрос и объект класса Users, от клиентского сервиса, после чего сохраняет его в
+     * БД и возвращает клиенту.
+     * **/
     @RequestMapping(value = "/users", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<Object> newUsers(@RequestBody Users users) {
         usersService.saveUser(users);
         return new ResponseEntity<>(users,HttpStatusCode.valueOf(200));
     }
-
+    /**
+     * @updateUser(): Принимает PUT запрос, id клиента и объект типа Users, от клиентского сервиса, далее идет проверка
+     * на наличие данного пользователя, в БД, если он присутствует, то вызывается метод "updateUser(userId,users)".
+     * **/
     @RequestMapping(value = "/users/{id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<Object> updateUser(@PathVariable(name = "id") long userId,
                                              @RequestBody Users users) {
@@ -53,7 +65,10 @@ public class MainController {
 
         return new ResponseEntity<>(users,HttpStatusCode.valueOf(200));
     }
-
+    /**
+     * @deleteUserById(): Принимает DELETE запрос, с параметром "userId", от клиентского сервиса, после чего проверяет,
+     * существует ли данный объект в БД, при отсутствии выдает Exception, при наличии удаляет объект Users, по его id.
+     * **/
     @RequestMapping(value = "/users/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<Object> deleteUserById(@PathVariable(name = "id") long id) {
         if (!usersService.existUserById(id)) {
